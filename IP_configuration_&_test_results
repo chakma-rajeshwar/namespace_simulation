@@ -1,0 +1,51 @@
+root@9568aad90f3f84f5:~/code# sudo ip netns exec ns1 arp -n
+Address                  HWtype  HWaddress           Flags Mask            Iface
+10.11.0.2                ether   1e:5e:88:ba:74:3a   C                     veth1-ns
+root@9568aad90f3f84f5:~/code# sudo ip netns exec ns2 arp -n
+Address                  HWtype  HWaddress           Flags Mask            Iface
+10.12.0.2                ether   8e:58:22:d4:90:8f   C                     veth2-ns
+root@9568aad90f3f84f5:~/code# sudo ip netns exec router-ns arp -n
+Address                  HWtype  HWaddress           Flags Mask            Iface
+10.12.0.1                ether   6e:57:94:e2:b9:6a   C                     veth4-ns
+10.11.0.1                ether   86:16:61:f4:5b:12   C                     veth3-ns
+root@9568aad90f3f84f5:~/code# sudo ip netns exec ns1 route
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+default         10.11.0.2       0.0.0.0         UG    0      0        0 veth1-ns
+10.11.0.0       0.0.0.0         255.255.255.0   U     0      0        0 veth1-ns
+root@9568aad90f3f84f5:~/code# sudo ip netns exec ns2 route
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+default         10.12.0.2       0.0.0.0         UG    0      0        0 veth2-ns
+10.12.0.0       0.0.0.0         255.255.255.0   U     0      0        0 veth2-ns
+root@9568aad90f3f84f5:~/code# sudo ip netns exec router-ns route
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+10.11.0.0       0.0.0.0         255.255.255.0   U     0      0        0 veth3-ns
+10.12.0.0       0.0.0.0         255.255.255.0   U     0      0        0 veth4-ns
+root@9568aad90f3f84f5:~/code# 
+
+root@9568aad90f3f84f5:~/code# ip netns exec ns1 ping 10.12.0.1 -c 2
+PING 10.12.0.1 (10.12.0.1) 56(84) bytes of data.
+64 bytes from 10.12.0.1: icmp_seq=1 ttl=63 time=0.235 ms
+64 bytes from 10.12.0.1: icmp_seq=2 ttl=63 time=0.152 ms
+
+--- 10.12.0.1 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1004ms
+rtt min/avg/max/mdev = 0.152/0.193/0.235/0.041 ms
+root@9568aad90f3f84f5:~/code# ip netns exec ns2 ping 10.11.0.1 -c 2
+PING 10.11.0.1 (10.11.0.1) 56(84) bytes of data.
+64 bytes from 10.11.0.1: icmp_seq=1 ttl=63 time=0.154 ms
+64 bytes from 10.11.0.1: icmp_seq=2 ttl=63 time=0.156 ms
+
+--- 10.11.0.1 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1023ms
+rtt min/avg/max/mdev = 0.154/0.155/0.156/0.001 ms
+root@9568aad90f3f84f5:~/code# 
+
+root@9568aad90f3f84f5:~/code# bridge link show
+18: veth1-br@if19: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 master br0 state forwarding priority 32 cost 2 
+20: veth2-br@if21: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 master br1 state forwarding priority 32 cost 2 
+22: veth3-br@if23: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 master br0 state forwarding priority 32 cost 2 
+24: veth4-br@if25: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 master br1 state forwarding priority 32 cost 2 
+root@9568aad90f3f84f5:~/code# 
